@@ -146,14 +146,14 @@ app.post('/user/logout',function(req,res) {
 })
 
 app.post('/user/login',passport.authenticate('local-login', {
-    failureRedirect: '/',
+    failureRedirect: localConfig.application.nginxlocation,
     failureFlash: true
 }),function(req,res) {
 	if (req.session.redirectTo) {
 		res.redirect(req.session.redirectTo);
 		delete req.session.redirectTo;
 	} else {
-		res.redirect("/");
+		res.redirect(localConfig.application.nginxlocation);
 	}
 })
 
@@ -167,11 +167,11 @@ app.post('/user/:username',function(req,res) {
 				ctrl.updateUser(req,res);
 			break;
 			default:
-				res.redirect("/");
+				res.redirect(localConfig.application.nginxlocation);
 			break;
 		}
 	} else {
-		res.redirect("/");
+		res.redirect(localConfig.application.nginxlocation);
 	}
 })
 
@@ -179,7 +179,7 @@ app.post('/user',function(req,res) {
 	if (req.user && req.user.permissions == "super") {
 		ctrl.createUser(req,res);
 	} else {
-		res.redirect("/");
+		res.redirect(localConfig.application.nginxlocation);
 	}
 })
 
@@ -188,8 +188,8 @@ app.get('/users',function(req,res) {
 		ctrl.getUsers(function(result) {
 			res.render('listUsers',{
 				user:req.user,
+				location:localConfig.application.nginxlocation,
 				users:result,
-				opts:localConfig.page,
 				error:req.flash("createMessage") || req.flash("editMessage") || req.flash("deleteMessage"),
 				success:req.flash("successMessage"),
 				edit:req.query.edit
@@ -197,7 +197,7 @@ app.get('/users',function(req,res) {
 		})
 	} else {
 		req.session.redirectTo = "/users";
-		res.redirect("/");
+		res.redirect(localConfig.application.nginxlocation);
 	}
 })
 
@@ -252,102 +252,10 @@ app.get('/api/user/:email',[jwtauth.auth],function(req,res) {
 app.get('/',function (req,res) {
 	res.render('home',{
 		user:req.user,
-		opts:localConfig.page,
+		location:localConfig.application.nginxlocation,
 		error:req.flash("loginMessage")
 	});
 })
-
-
-// dashboard pages using a postgres connection
-var PostGresHelper = require("./routes/postGresHelper.js");
-var pghelper = new PostGresHelper();
-
-app.get('/query/:queryStr',function(req,res) {
-	if (req.user && req.params.queryStr) {
-		pghelper.query(req.params.queryStr, function(err, data){
-			res.send(data);
-		})
-	}
-})
-
-app.get('/households',function(req,res) {
-	if (req.user) {
-		pghelper.query('SELECT * FROM "HOUSEHOLD";', function(err, data){
-	    res.render('household', {
-				user:req.user,
-	      opts:localConfig.page,
-	      pgdata:data,
-				error:req.flash("loginMessage")
-	    });
-	  });
-	} else {
-		res.redirect("/");
-	}
-})
-
-app.get('/households-map',function(req,res) {
-	if (req.user) {
-		pghelper.query('SELECT * FROM "HOUSEHOLD";', function(err, data){
-	    res.render('households-map', {
-				user:req.user,
-	      opts:localConfig.page,
-	      pgdata:data,
-				error:req.flash("loginMessage")
-	    });
-	  });
-	} else {
-		res.redirect("/");
-	}
-})
-
-app.get('/ccg',function(req,res) {
-	if (req.user) {
-    res.render('ccg', {
-			user:req.user,
-      opts:localConfig.page,
-			error:req.flash("loginMessage")
-    });
-	} else {
-		res.redirect("/");
-	}
-})
-
-app.get('/core-shelter',function(req,res) {
-	if (req.user) {
-    res.render('core-shelter', {
-			user:req.user,
-      opts:localConfig.page,
-			error:req.flash("loginMessage")
-    });
-	} else {
-		res.redirect("/");
-	}
-})
-
-app.get('/sted',function(req,res) {
-	if (req.user) {
-    res.render('sted', {
-			user:req.user,
-      opts:localConfig.page,
-			error:req.flash("loginMessage")
-    });
-	} else {
-		res.redirect("/");
-	}
-})
-
-app.get('/spot-maps',function(req,res) {
-	if (req.user) {
-    res.render('spot-maps', {
-			user:req.user,
-      opts:localConfig.page,
-			error:req.flash("loginMessage")
-    });
-	} else {
-		res.redirect("/");
-	}
-})
-
 
 
 app.listen(localConfig.application.port);
