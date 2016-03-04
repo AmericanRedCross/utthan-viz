@@ -141,7 +141,7 @@ app.use(express.static('client'));
 
 app.post('/user/logout',function(req,res) {
 	req.session.destroy(function() {
-		res.redirect("/");
+		res.redirect(localConfig.application.nginxlocation);
 	})
 })
 
