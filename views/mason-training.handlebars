@@ -125,9 +125,8 @@ L.tileLayer('http://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
 
 function getData(){
   $.ajax({
-    type: 'POST',
-    // data: {'file': filename},
-    url: '/mason-training',
+    type: 'GET',
+    url: 'data/mason-training',
     dataType: 'JSON'
   }).done(function(response){
     data = response;

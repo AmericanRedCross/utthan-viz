@@ -258,7 +258,7 @@ app.get('/',function (req,res) {
 	});
 })
 
-app.post('/mason-training', function (req,res){
+app.get('/data/mason-training', function (req,res){
 	if (req.user){
 		fs.readFile(path.join(localConfig.application.dboxpath,localConfig.application.prjfolder,localConfig.application.trainingfolder,"Mason_Training.csv"), function(err, data) {
 			if (err) throw err;
