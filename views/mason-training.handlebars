@@ -1,0 +1,408 @@
+<link rel="stylesheet" href="//cdn.datatables.net/1.10.10/css/jquery.dataTables.css" />
+<link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.3/leaflet.css" />
+<style>
+#map{
+  height: 400px;
+}
+.leaflet-control-attribution a {
+  color: #6d6e70 !important;
+  cursor: pointer;
+}
+.leaflet-control-attribution {
+  font-size: x-small;
+  color: #78787d;
+}
+.leaflet-control-attribution a {
+  text-decoration: none;
+  cursor: pointer;
+  color: #6d6e70;
+}
+.admin-geo {
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke: #000;
+  fill-opacity: 0.45;
+}
+
+.active-district {
+  stroke: #ecb731;
+  stroke-width: 2;
+}
+.info {
+  padding: 6px 8px;
+  background: white;
+  background: rgba(255,255,255,0.9);
+  box-shadow: 0 0 15px rgba(0,0,0,0.2);
+  border-radius: 5px;
+  text-align: right;
+}
+.info-main {
+  font-size: 16px;
+  font-weight: 700;
+}
+.info-sub {
+  font-size: 14px;
+}
+.info-note {
+  font-size: 11px;
+  color: #777;
+}
+.clickable {
+  cursor: pointer;
+}
+#listTable{
+  min-height: 460px;
+}
+
+</style>
+
+
+<header class="row header">
+	<div class="col-md-12">
+		<h1>Mason training </h1>
+	</div>
+</header>
+<hr>
+
+<div class="row">
+    <div id="map"></div>
+</div>
+
+<hr>
+
+<div class="row">
+	<div class="col-sm-3">
+		<h4>Gender</h4>
+    <div id="genderLegend"> </div>
+	  <div id="genderPie"></div>
+	</div>
+  <div class="col-sm-3"></div>
+</div>
+
+<hr>
+
+<div id="listTable"></div>
+
+<hr>
+<footer id="site-footer">
+	<div class="row row-logo">
+				{{{logos}}}
+			</div>
+</footer>
+
+<script src="//cdn.datatables.net/1.10.10/js/jquery.dataTables.js"></script>
+<script src="js/districtgeo-temp.js"></script>
+<script src="http://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.3/leaflet.js"></script>
+<script>
+
+d3.select(window).on("resize", throttle);
+var throttleTimer;
+function throttle() {
+  window.clearTimeout(throttleTimer);
+    throttleTimer = window.setTimeout(function() {
+      resize();
+    }, 200);
+}
+function resize() {
+  d3.select("#genderPie").select("svg").remove();
+  buildPies();
+}
+
+var data, filteredData;
+var map = L.map('map', {scrollWheelZoom:false}).setView([0, 0], 2);
+var mapFeatures = L.layerGroup().addTo(map);
+var pointLayer = L.geoJson();
+var mapBounds;
+
+var info = L.control();
+
+var svg = d3.select(map.getPanes().overlayPane).append("svg"),
+    districtGroup = svg.append("g").attr("class", "leaflet-zoom-hide");
+
+L.tileLayer('http://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
+  attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors | Tiles courtesy of <a href="http://hot.openstreetmap.org/" target="_blank">H.O.T.</a>'
+}).addTo(map);
+
+function getData(){
+  $.ajax({
+    type: 'POST',
+    // data: {'file': filename},
+    url: '/mason-training',
+    dataType: 'JSON'
+  }).done(function(response){
+    data = response;
+    filteredData = response;
+    mapDistricts(data);
+  });
+}
+
+function mapDistricts(data){
+
+  info.onAdd = function (map) {
+      this._div = L.DomUtil.create('div', 'info'); // create a div with a class "info"
+      this.update();
+      return this._div;
+  };
+  // method that we will use to update the control based on feature properties passed
+  info.update = function (name, total) {
+      var infoHtml = ''
+      if(name && total){
+        infoHtml += '<div class="info-main">' + name + '</div><div class="info-sub">' + total + ' total masons trained</div>';
+        infoHtml += '<div class="info-note  clickable" onclick="clearDistrict();"><i class="fa fa-times"></i> clear selection</div>';
+      } else {
+        infoHtml += '<div class="info-main">Utthan Program</div><div class="info-sub">' + data.length + ' masons trained</div>';
+        infoHtml += '<div class="info-note" >Click a district</div>';
+      }
+      this._div.innerHTML = infoHtml;
+  };
+  info.addTo(map);
+
+  var totals = []
+
+  var nest = d3.nest()
+    .key(function(d) { return d.district; })
+    .rollup(function(leaves) { totals.push(leaves.length);  return leaves.length; })
+    .map(data);
+
+  var color = d3.scale.quantize()
+    .domain([d3.min(totals), d3.max(totals)])
+    .range(["#c994c7","#df65b0","#e7298a","#ce1256","#980043","#67001f"]);
+
+  function projectPoint(x, y) {
+    var point = map.latLngToLayerPoint(new L.LatLng(y, x));
+    this.stream.point(point.x, point.y);
+  }
+
+  var transform = d3.geo.transform({point: projectPoint}),
+      path = d3.geo.path().projection(transform);
+
+  var feature = districtGroup.selectAll("path")
+    .data(districts.features)
+    .enter().append("path");
+
+  map.on("viewreset", reset);
+  reset();
+
+  var fcBounds = d3.geo.bounds(districts)
+  map.fitBounds([[fcBounds[0][1],fcBounds[0][0]],[fcBounds[1][1],fcBounds[1][0]]])
+
+  function reset() {
+      var bounds = path.bounds(districts),
+          topLeft = bounds[0],
+          bottomRight = bounds[1];
+
+      svg .attr("width", bottomRight[0] - topLeft[0])
+          .attr("height", bottomRight[1] - topLeft[1])
+          .style("left", topLeft[0] + "px")
+          .style("top", topLeft[1] + "px");
+
+      districtGroup   .attr("transform", "translate(" + -topLeft[0] + "," + -topLeft[1] + ")");
+
+
+      d3.selection.prototype.moveToFront = function() {
+        return this.each(function(){
+          this.parentNode.appendChild(this);
+        });
+      };
+
+      feature.attr("d", path)
+        .style("fill", function(d){
+          if(color(nest[d.properties["NAME_3"]]) === undefined) { return "#d7d7d8" }
+          else { return color(nest[d.properties["NAME_3"]]) }
+        })
+        .attr("data-total", function(d){
+          if(nest[d.properties["NAME_3"]] === undefined) { return 0; }
+          else { return nest[d.properties["NAME_3"]] }
+        })
+        .classed("admin-geo", true)
+        .on("click", function(d) {
+          d3.select(this).moveToFront();
+          feature.classed("active-district", false)
+          d3.select(this).classed("active-district", true)
+          districtClick(this, d);
+
+       })
+    }
+
+    buildPies();
+
+}
+
+function districtClick(element, feature){
+  console.log(element, feature)
+  var name = feature.properties.NAME_3;
+  var total = d3.select(element).attr("data-total");
+  info.update(name, total)
+  filteredData = data.filter(function(d){
+    return d.district === name;
+  })
+  drawPies();
+
+}
+
+function clearDistrict(){
+  districtGroup.selectAll("path").classed("active-district", false)
+  info.update()
+  filteredData = data;
+  drawPies();
+}
+
+
+
+
+
+
+
+var pieRadius, genderPie, genderPiePath;
+function buildPies(){
+
+  var widthOnPage = $('#genderPie').innerWidth();
+  var width = (widthOnPage < 300) ? widthOnPage : 300;
+  var height = width;
+  pieRadius = Math.min(width, height) / 2;
+
+  genderPie = d3.select('#genderPie').append("svg")
+      .attr("width", width)
+      .attr("height", height)
+    .append("g")
+      .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+  genderPiePath = genderPie.selectAll("path");
+
+  drawPies();
+};
+
+function drawPies(){
+  /////////////////
+  // PIE HELPERS //
+  // ########### //
+  /////////////////
+  function findNeighborArc(i, data0, data1, key) {
+    var d;
+    return (d = findPreceding(i, data0, data1, key)) ? {startAngle: d.endAngle, endAngle: d.endAngle}
+    : (d = findFollowing(i, data0, data1, key)) ? {startAngle: d.startAngle, endAngle: d.startAngle}
+    : null;
+  }
+  // # Find the element in data0 that joins the highest preceding element in data1.
+  function findPreceding(i, data0, data1, key) {
+    var m = data0.length;
+    while (--i >= 0) {
+      var k = key(data1[i]);
+      for (var j = 0; j < m; ++j) {
+        if (key(data0[j]) === k) return data0[j];
+      }
+    }
+  }
+  // # Find the element in data0 that joins the lowest following element in data1.
+  function findFollowing(i, data0, data1, key) {
+    var n = data1.length, m = data0.length;
+    while (++i < n) {
+      var k = key(data1[i]);
+      for (var j = 0; j < m; ++j) {
+        if (key(data0[j]) === k) return data0[j];
+      }
+    }
+  }
+
+  function key(d) {
+    return d.data.key;
+  }
+
+  var pie = d3.layout.pie().sort(null).value(function(d) { return d.values; });
+
+  var arc = d3.svg.arc()
+        .outerRadius(pieRadius - 10)
+        .innerRadius(0);
+
+  function arcTween(d) {
+    var i = d3.interpolate(this._current, d);
+    this._current = i(0);
+    return function(t) { return arc(i(t)); };
+  }
+
+  ////////////////
+  // GENDER PIE //
+  // ########## //
+  ////////////////
+  var genderColor = d3.scale.category20().domain(data.map(function(d) { return d['gender']; }))
+
+  var genderPieData = d3.nest()
+    .key(function(d) { return d['gender'][0]; })
+    .rollup(function(values){
+      return values.length
+    })
+    .entries(filteredData)
+
+  var genderData0 = genderPiePath.data(),
+    genderData1 = pie(genderPieData);
+
+  genderPiePath = genderPiePath.data(genderData1, key);
+
+  genderPiePath.enter().append("path")
+    .each(function(d, i) { this._current = findNeighborArc(i, genderData0, genderData1, key) || d; })
+    .attr("fill", function(d) { return genderColor(d.data.key); })
+  .append("title")
+    .text(function(d) { return d.data.key; });
+
+  genderPiePath.exit()
+    .datum(function(d, i) { return findNeighborArc(i, genderData1, genderData0, key) || d; })
+  .transition()
+    .duration(750)
+    .attrTween("d", arcTween)
+    .remove();
+
+  genderPiePath.transition()
+    .duration(750)
+    .attrTween("d", arcTween);
+
+  // Legend
+  var genderLegend = d3.select('#genderLegend').selectAll('div').data(genderPieData, function(d) { return d['key']; });
+  // UPDATE
+  genderLegend.html(function(d){
+    return '<i class="fa fa-square" style="color:' + genderColor(d.key) + '"></i> &nbsp;' + d.key + ' <small>(' + d.values + ')</small>';
+  })
+  // ENTER
+  genderLegend.enter().append('div')
+  .attr('class', "legend-item")
+  .html(function(d){
+    return '<i class="fa fa-square" style="color:' + genderColor(d.key) + '"></i> &nbsp;' + d.key + ' <small>(' + d.values + ')</small>';
+  })
+  // REMOVE
+  genderLegend.exit().remove();
+  // sort
+  genderLegend.sort(function(a, b) {
+    return b.values - a.values;
+  })
+
+
+  buildList();
+}
+
+function buildList(){
+
+  $('#listTable').empty();
+  $('#listTable').html('<table data-sortable id="dataTable" class="sortable-theme-minimal">' +
+        '<thead><th>Training</th><th>Date</th><th>First name</th><th>Last name</th><th>Gender</th><th>District</th><th>VDC</th><th>Ward</th></tr></thead><tbody></tbody></table>')
+  $.each(filteredData, function(i,d){
+    var rowHtml = '<tr>' +
+      '<td>' + d.training_location + '</td>' +
+      '<td>' + d.date_completed_training + '</td>' +
+      '<td>' + d.name_first + '</td>' +
+      '<td>' + d.name_last + '</td>' +
+      '<td>' + d.gender + '</td>' +
+      '<td>' + d.district + '</td>' +
+      '<td>' + d.vdc + '</td>' +
+      '<td>' + d.ward + '</td>' +
+      '</tr>';
+    $('#listTable tbody').append(rowHtml);
+  });
+
+  $('#dataTable').DataTable({
+    "lengthChange": false
+  });
+
+}
+
+
+getData();
+
+</script>

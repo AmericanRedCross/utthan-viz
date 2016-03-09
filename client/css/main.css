@@ -1,15 +1,9 @@
 .temp-disable {
   cursor: not-allowed;
 }
-html, body, #site-content {
-  height: 100%;
-  width: 100%;
-  margin: 0;
-  padding: 0;
-}
 
 body { color: #555; }
-.jumbotron-logos img {
+.logos img {
   height: 40px;
   margin-right: 20px;
 }
@@ -89,7 +83,7 @@ fieldset legend { padding: 0; margin: 0; position: absolute; border: none; font-
 
 /* Side Menu */
 #sidebar-wrapper {
-    z-index: 1000;
+    z-index: 1001;
     position: fixed;
     right: 0;
     width: 250px;

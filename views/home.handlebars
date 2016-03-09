@@ -1,18 +1,17 @@
 <header class="row header">
-	<div class="jumbotron">
-
-		<div class="container">
-			<div class="jumbotron-logos">
+			<h1><div class="logos">
 				<img src="media/logos/01-nrcs.png">
 				<img src="media/logos/02-arc.png">
-			</div>
-			<h1>Utthan<br>
+				</div>
+			</h1>
+			<h1>
+			Utthan<br>
 			<small>Earthquake Recovery Program</small></h1>
-		</div>
-	</div>
+
 </header>
 
-<div class="container">
+<hr>
+
 
 {{#if user}}
 <div class="row">
@@ -55,6 +54,7 @@
 </footer>
 
 {{else}}
+<div class="row">
 {{#if error}}
 		<div class="alert alert-danger alert-dismissable">
 			  <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>

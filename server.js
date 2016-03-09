@@ -1,11 +1,12 @@
 //General config
 var flash = require('connect-flash');
+var path = require('path');
 var localConfig = require('./config');
 var AppCtrl = require('./routes/app').Ctrl;
 var Asset = require('./routes/app').Asset;
 var moment = require('moment');
 var fs = require('fs');
-
+var parse = require('csv-parse');
 
 var ctrl = new AppCtrl('localhost', 27017);
 
@@ -255,6 +256,29 @@ app.get('/',function (req,res) {
 		location:localConfig.application.nginxlocation,
 		error:req.flash("loginMessage")
 	});
+})
+
+app.post('/mason-training', function (req,res){
+	if (req.user){
+		fs.readFile(path.join(localConfig.application.dboxpath,localConfig.application.prjfolder,localConfig.application.trainingfolder,"Mason_Training.csv"), function(err, data) {
+			if (err) throw err;
+			parse(data, {columns:true}, function(error, output){
+				res.send(output);
+			})
+		});
+	}
+})
+
+app.get('/mason-training',function(req,res) {
+	if (req.user) {
+		res.render('mason-training', {
+			user:req.user,
+      location:localConfig.application.nginxlocation,
+			error:req.flash("loginMessage")
+    });
+	} else {
+		res.redirect(localConfig.application.nginxlocation);
+	}
 })
 
 
