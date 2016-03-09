@@ -83,7 +83,7 @@ fieldset legend { padding: 0; margin: 0; position: absolute; border: none; font-
 
 /* Side Menu */
 #sidebar-wrapper {
-    z-index: 1001;
+    z-index: 1002;
     position: fixed;
     right: 0;
     width: 250px;
@@ -135,7 +135,7 @@ fieldset legend { padding: 0; margin: 0; position: absolute; border: none; font-
     background: none;
 }
 #menu-toggle {
-    z-index: 1;
+    z-index: 1001;
     position: fixed;
     top: 0;
     right: 0;
