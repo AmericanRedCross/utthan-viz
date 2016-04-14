@@ -288,7 +288,7 @@ app.get('/data/baby-wash', function (req,res){
 		var files = ["DWSS_and_WSS_Makawanpur.csv", "DWSS_and_WSS_Nuwakot.csv", "DWSS_and_WSS_Rasuwa.csv"]
 		var allData = [];
 		var readIt = function(filename, cb){
-			fs.readFile(path.join(localConfig.application.dboxpath,localConfig.application.prjfolder,"Baby_WASH",filename), function(err, data) {
+			fs.readFile(path.join(localConfig.application.dboxpath,"Baby_WASH",filename), function(err, data) {
 				if (err) throw err;
 				parse(data, {columns:true}, function(error, output){
 					allData = allData.concat(output);
