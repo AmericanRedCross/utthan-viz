@@ -40,7 +40,7 @@ var checklist = ["intake structure / collection local materials", "intake struct
 function getData(){
   $.ajax({
     type: 'GET',
-    url: '/data/baby-wash',
+    url: 'data/baby-wash',
     dataType: 'JSON'
   }).done(function(response){
     data = response;
