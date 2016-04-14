@@ -281,6 +281,46 @@ app.get('/mason-training',function(req,res) {
 	}
 })
 
+var flow = require('flow')
+
+app.get('/data/baby-wash', function (req,res){
+	if (req.user){
+		var files = ["DWSS_and_WSS_Makawanpur.csv", "DWSS_and_WSS_Nuwakot.csv", "DWSS_and_WSS_Rasuwa.csv"]
+		var allData = [];
+		var readIt = function(filename, cb){
+			fs.readFile(path.join(localConfig.application.dboxpath,localConfig.application.prjfolder,"Baby_WASH",filename), function(err, data) {
+				if (err) throw err;
+				parse(data, {columns:true}, function(error, output){
+					allData = allData.concat(output);
+					cb();
+				})
+			});
+		}
+		flow.exec(
+			function() {
+				for(index in files){
+					readIt(files[index], this.MULTI());
+				}
+			},
+			function(){
+				res.send(allData);
+			}
+		);
+	}
+})
+
+app.get('/baby-wash',function(req,res) {
+	if (req.user) {
+		res.render('baby-wash', {
+			user:req.user,
+      location:localConfig.application.nginxlocation,
+			error:req.flash("loginMessage")
+    });
+	} else {
+		res.redirect(localConfig.application.nginxlocation);
+	}
+})
+
 
 app.listen(localConfig.application.port);
 console.log('Listening on port '+localConfig.application.port);

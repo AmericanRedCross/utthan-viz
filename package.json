@@ -13,6 +13,7 @@
     "express": "^4.13.0",
     "express-session": "^1.11.2",
     "express3-handlebars": "^0.5.2",
+    "flow": "^0.2.3",
     "gridfs-stream": "^1.1.1",
     "jwt-simple": "^0.3.0",
     "moment": "^2.10.3",
