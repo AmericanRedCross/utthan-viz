@@ -1,13 +1,24 @@
 <style>
-.stage-title {
-  font-size: 14px;
-  font-weight:700;
+.project-title {
+  font-size: 16px;
+  font-weight:900;
 }
 .stage-info {
-  display: inline-block;
+  padding-left: 35px;
+  margin-bottom: 10px;
+}
+.stage-graph {
+  float:left;
+
+}
+.map{
+  height: 300px;
+  width: 100%;
 }
 
+
 </style>
+<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.css" />
 
 
 <header class="row header">
@@ -17,10 +28,8 @@
 </header>
 <hr>
 
-<div class="row">
-    <div id="content">
 
-    </div>
+<div id="content">
 </div>
 
 <hr>
@@ -31,11 +40,15 @@
 </footer>
 
 
+<script src="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.js"></script>
 <script>
 
 var data;
 var stages = ["intake structure", "pipeline", "rvt (stone m)", "rvt (ferrocement)", "bpt-ic-dc", "tap stand posts", "toilet construction"]
 var checklist = ["intake structure / collection local materials", "intake structure / foundation prep", "intake structure / stone solling", "intake structure / pcc", "intake structure / stone masonry work", "intake structure / plastering", "intake structure / punning", "intake structure / install fittings", "intake structure / barbed wire fencing", "pipeline / digging", "pipeline / replacement & joining", "pipeline / refilling", "rvt (stone m) / collection local materials", "rvt (stone m) / clear site", "rvt (stone m) / foundation prep", "rvt (stone m) / stone solling", "rvt (stone m) / pcc", "rvt (stone m) / stone masonry work", "rvt (stone m) / plastering", "rvt (stone m) / punning", "rvt (stone m) / cover slab casting", "rvt (stone m) / install fittings", "rvt (stone m) / barbed wire fencing", "rvt (ferrocement) / site clearance", "rvt (ferrocement) / foundation prep", "rvt (ferrocement) / plumbing", "rvt (ferrocement) / stone solling", "rvt (ferrocement) / pcc", "rvt (ferrocement) / formwork ferrocement", "rvt (ferrocement) / laying of chicken wire", "rvt (ferrocement) / laying of plain wire", "rvt (ferrocement) / outside plaster", "rvt (ferrocement) / curing", "rvt (ferrocement) / remove formwork", "rvt (ferrocement) / inside plaster", "rvt (ferrocement) / punning", "rvt (ferrocement) / barbed wire fencing", "rvt (ferrocement) / installation of fittings", "bpt-ic-dc / site clearance", "bpt-ic-dc / foundation prep", "bpt-ic-dc / stone solling", "bpt-ic-dc / pcc", "bpt-ic-dc / stone masonary work", "bpt-ic-dc / plastering", "bpt-ic-dc / punning", "bpt-ic-dc / slab casting", "bpt-ic-dc / install fittings", "tap stand posts / clear site", "tap stand posts / foundation prep", "tap stand posts / stone solling", "tap stand posts / pcc", "tap stand posts / stone masonry work", "tap stand posts / plastering", "tap stand posts / instal fittings", "toilet construction / site clearance", "toilet construction / septic tank foundation prep", "toilet construction / soiling in septic tank", "toilet construction / dry stone masonary for septic tank", "toilet construction / slab casting over septic tank", "toilet construction / toilet house foundation prep", "toilet construction / solling for toilet house", "toilet construction / stone masonry work, mud & mortar", "toilet construction / door and ventilation fixing", "toilet construction / plastering", "toilet construction / roofing", "toilet construction / fixing of panset"]
+
+var formatPercent = d3.format("%");
+var commas = d3.format(",");
 
 function getData(){
   $.ajax({
@@ -51,11 +64,12 @@ function getData(){
 function crunchData(){
   $.each(data, function(index, project){
     project["progress"] = {};
+    project['sort-string']= project.district.toLowerCase() + project.vdc.toLowerCase() + project.location.toLowerCase();
     for(key in project){
       if(checklist.indexOf(key) !== -1){
         var stage = key.split(" / ")[0];
         var step = key.split(" / ")[1];
-        var status = project[key].toLowerCase();
+        var status = project[key].toLowerCase().replace(/\s/g, "");;
         if(project["progress"].hasOwnProperty(stage) === false){
           project["progress"][stage] = { y: 0, n: 0, o: 0 };
         }
@@ -88,35 +102,105 @@ var width = 30,
     pie = d3.layout.pie().value(function(d){ return d.count })
 
 function vizData(){
-  $.each(data, function(indexP, project){
-    var section = d3.select('#content').append('div').html('<div class="stage-title">' +
-      project.location + ' <small>(' + project.district + ', ' + project.vdc +
-      ', Ward ' + project.ward + ')</small></div>')
-    d3.select('#content').append('hr')
-    $.each(stages, function(indexS, stage){
-      var yesCount = project.progress[stage]["y"];
-      var noCount = project.progress[stage]["n"];
-      var ongoingCount = project.progress[stage]["o"];
-      var total = yesCount + noCount + ongoingCount;
-      if(total > 0){
-        var pieData = [
-    			{ label: 'yes', count: yesCount, color: "#537b35" },
-    			{ label: 'no', count: noCount, color: "#d7d7d8" },
-          { label: 'ongoing', count: ongoingCount, color: "#ecb731" }
-    		]
-        var sectionRow = section.append('div')
-        var svg = sectionRow.append('div').attr('class', 'stage-info').append('svg')
-          .attr('class', 'progress-pie')
-          .attr('width', width).attr('height', height)
-          .append('g').attr('transform', 'translate(' + (width / 2) + ',' + (height / 2) + ')')
-        svg.selectAll('g').data(pie(pieData)).enter().append('path')
-          .attr('d', arc)
-          .style("fill", function(d) { return d.data.color; })
-        sectionRow.append('div').attr('class', 'stage-info').text(stage)
 
+  var sections = d3.select('#content').selectAll('div').data(data).enter().append('div').classed({'row': true, 'project-row': true})
+    .attr('data-sort', function(d){ return d['sort-string']; })
+    .html(function(d) { return '<div class="row"><div class="col-md-6">' +
+        '<div class="project-info">' +
+            '<div class="project-title">' +
+            d.location + '<br><small>(' + d.district + ', ' + d.vdc +
+            ', Ward ' + d.ward + ')</small></div>' +
+            '<div class="total-progress"></div>' +
+            '<div class="stage-progress"></div>' +
+          '</div>' + // .project-info
+        '</div>' + // col-md-6
+        '<div class="col-md-6">' +
+          '<div class="project-map"></div>' +
+          '<div class="project-stats"></div>' +
+        '</div>' + // col-md-6
+    '</div>' + // row
+    '<hr>'; })
+
+    var counter = 0;
+    sections.each(function(d){
+      var yesGrand = 0;
+      var ongoingGrand = 0;
+      var totalGrand = 0;
+      var pageElement = d3.select(this);
+      $.each(stages, function(indexS, stage){
+        var yesCount = d.progress[stage]["y"];
+        yesGrand += yesCount;
+        var noCount = d.progress[stage]["n"];
+        var ongoingCount = d.progress[stage]["o"];
+        ongoingGrand += ongoingCount;
+        var total = yesCount + noCount + ongoingCount;
+        totalGrand += total;
+        if(total > 0){
+          var pieData = [
+            { label: 'yes', count: yesCount, color: "#537b35" },
+            { label: 'no', count: noCount, color: "#d7d7d8" },
+            { label: 'ongoing', count: ongoingCount, color: "#ecb731" }
+          ]
+          var graphedStage = pageElement.select('.stage-progress').append('div');
+          var svg = graphedStage.append('div').attr('class', 'stage-graph').append('svg')
+            .attr('class', 'progress-pie')
+            .attr('width', width).attr('height', height)
+            .append('g').attr('transform', 'translate(' + (width / 2) + ',' + (height / 2) + ')')
+          svg.selectAll('g').data(pie(pieData)).enter().append('path')
+            .attr('d', arc)
+            .style("fill", function(d) { return d.data.color; })
+
+          var otherInfo = '<b>' + stage + '</b> <small> [' + formatPercent((yesCount + (0.5 * ongoingCount)) / total) + ']</small><br>' +
+              'start date: ' + d[stage + ' / start date'] + '<br>' +
+              'expected end date: ' + d[stage + ' / expected end date'] + '<br>' +
+              'actual end date: ' + d[stage + ' / end date'] + '<br>';
+          otherInfo += (d[stage + ' / reasons for variance'].length > 0) ? 'reason for variance: ' + d[stage + ' / reasons for variance'] : '';
+          graphedStage.append('div').attr('class', 'stage-info').html(otherInfo)
+        }
+      });
+
+      pageElement.select('.total-progress').html('<p><small>approximately ' + formatPercent((yesGrand + (0.5 * ongoingGrand)) / totalGrand) + '</small></p>')
+
+      if (isNaN(parseFloat(d.latitude)) === false && isNaN(parseFloat(d.longitude)) === false){
+        pageElement.select('.project-map').html('<div class="map"' + ' id="map' + counter + '"' + '></div>');
+        // create basic leaflet map
+        // ========================
+        // tile layer for base map
+        var hotUrl = 'http://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png',
+          hotAttribution = '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, Tiles from <a href="http://hot.openstreetmap.org/" target="_blank">H.O.T.</a>',
+          hotLayer = L.tileLayer(hotUrl, {attribution: hotAttribution});
+        // initialize map w options
+        var thisMapContainer = 'map' + counter;
+        counter++;
+        var thisMap = L.map(thisMapContainer, {
+            layers: [hotLayer],
+            center: new L.LatLng(d.latitude, d.longitude),
+            zoom: 13,
+            minZoom: 8
+          });
+        var prjMarker = L.marker([d.latitude, d.longitude]).addTo(thisMap);
       }
-    });
-  });
+
+      var commContrib = (isNaN(parseFloat(d['amt of community contribution']))) ? '?' : commas(d['amt of community contribution']) ;
+      var totalCost = (isNaN(parseFloat(d['total cost']))) ? '?' : commas(d['total cost']) ;
+      var percentCost = (isNaN(parseFloat(d['amt of community contribution']) / parseFloat(d['total cost']))) ? '?' : formatPercent(parseFloat(d['amt of community contribution']) / parseFloat(d['total cost'])) ;
+      pageElement.select('.project-stats').html('<b>Days required: </b>' + d['# days required'] + '<br>' +
+        '<b># Laborers:</b> ' + d['# laborers'] + '<br>' +
+        '<b>Comm. contribution:</b> ' + commContrib + ' (' + percentCost + ')<br>' +
+        '<b>Total cost:</b> ' + totalCost + '<br>' +
+        '<b>People reached:</b> ' + d["total # people reached"] + ' | <b>HH reached:</b> ' + d["HH coverage"] + '<br>' +
+        '<b><i class="fa fa-female fa-fw"></i></b> ' + d['total females'] + ' | <b><i class="fa fa-male fa-fw"></i></b> ' + d['total males'] + '<br>' +
+        '<b>Brahmin/Chhetri:</b> ' + d['total bramhin_chhetri'] + ' | <b>Janajati:</b> ' + d['total janajati'] + ' | <b>Dalit:</b> ' + d['total dalit'] + ' | <b>Other ethnic:</b> ' + d['total other ethnic'] + '<br>' +
+        '<b><i class="fa fa-wheelchair"></i></b> ' + d['# w disability'])
+    })
+
+
+  sections.sort(function(a,b){
+      if(a['sort-string'] < b['sort-string']) return -1;
+      if(a['sort-string'] > b['sort-string']) return 1;
+      return 0;
+  })
+
 }
 
 getData();
