@@ -15,6 +15,14 @@
   height: 300px;
   width: 100%;
 }
+.glyphicon.step-info {
+  cursor: pointer;
+  color: #6d6e70;
+}
+.glyphicon.step-info:hover {
+  color: #ed1b2e;
+}
+
 
 
 </style>
@@ -71,18 +79,21 @@ function crunchData(){
         var step = key.split(" / ")[1];
         var status = project[key].toLowerCase().replace(/\s/g, "");;
         if(project["progress"].hasOwnProperty(stage) === false){
-          project["progress"][stage] = { y: 0, n: 0, o: 0 };
+          project["progress"][stage] = { y: 0, n: 0, o: 0, yesSteps: [], noSteps: [], ongoingSteps: []  };
         }
         var status = project[key].toLowerCase();
         switch(status) {
           case "y":
             project["progress"][stage]["y"] ++;
+            project["progress"][stage]["yesSteps"].push(step);
             break;
           case "n":
             project["progress"][stage]["n"] ++;
+            project["progress"][stage]["noSteps"].push(step);
             break;
           case "o":
             project["progress"][stage]["o"] ++;
+            project["progress"][stage]["ongoingSteps"].push(step);
             break;
           default:
             break;
@@ -129,9 +140,12 @@ function vizData(){
       var pageElement = d3.select(this);
       $.each(stages, function(indexS, stage){
         var yesCount = d.progress[stage]["y"];
+        var yesList = d.progress[stage]["yesSteps"].join(" -- ");
         yesGrand += yesCount;
         var noCount = d.progress[stage]["n"];
+        var noList = d.progress[stage]["noSteps"].join(" -- ");
         var ongoingCount = d.progress[stage]["o"];
+        var ongoingList = d.progress[stage]["ongoingSteps"].join(" -- ");
         ongoingGrand += ongoingCount;
         var total = yesCount + noCount + ongoingCount;
         totalGrand += total;
@@ -150,7 +164,12 @@ function vizData(){
             .attr('d', arc)
             .style("fill", function(d) { return d.data.color; })
 
-          var otherInfo = '<b>' + stage + '</b> <small> [' + formatPercent((yesCount + (0.5 * ongoingCount)) / total) + ']</small><br>' +
+          var otherInfo = '<b>' + stage + '</b> <small> [' + formatPercent((yesCount + (0.5 * ongoingCount)) / total) + ']</small>&nbsp; ' +
+              '<span class="glyphicon glyphicon-info-sign step-info" data-container="body" data-toggle="popover" data-placement="right" data-html="';
+          otherInfo += (yesList.length > 0) ? '<b>Yes:</b> ' + yesList + '<br>' : '';
+          otherInfo += (ongoingList.length > 0) ? '<b>Ongoing:</b> ' + ongoingList + '<br>': '';
+          otherInfo += (noList.length > 0) ? '<b>No:</b> ' + noList : '';
+          otherInfo += '"></span>' + '<br>' +
               'start date: ' + d[stage + ' / start date'] + '<br>' +
               'expected end date: ' + d[stage + ' / expected end date'] + '<br>' +
               'actual end date: ' + d[stage + ' / end date'] + '<br>';
@@ -158,6 +177,16 @@ function vizData(){
           graphedStage.append('div').attr('class', 'stage-info').html(otherInfo)
         }
       });
+
+      $(function () {
+        $('[data-toggle="popover"]').popover({
+          html: true,
+          trigger: 'click',
+          content: function() {
+            return $(this).data('html');
+          }
+        })
+      })
 
       pageElement.select('.total-progress').html('<p><small>approximately ' + formatPercent((yesGrand + (0.5 * ongoingGrand)) / totalGrand) + '</small></p>')
 
