@@ -22,6 +22,29 @@
 .glyphicon.step-info:hover {
   color: #ed1b2e;
 }
+.green-text {
+  padding: 3px;
+  margin: 3px;
+  border-radius: 2px;
+  color: #013220;
+  background-color: #ccebc5;
+}
+.amber-text {
+  padding: 3px;
+  margin: 3px;
+  border-radius: 2px;
+  color: #3b2c00;
+  background-color: #fed9a6;
+
+}
+.red-text {
+  padding: 3px;
+  margin: 3px;
+  border-radius: 2px;
+  color: #580000;
+  background-color: #fbb4ae;
+
+}
 
 
 
@@ -166,9 +189,9 @@ function vizData(){
 
           var otherInfo = '<b>' + stage + '</b> <small> [' + formatPercent((yesCount + (0.5 * ongoingCount)) / total) + ']</small>&nbsp; ' +
               '<span class="glyphicon glyphicon-info-sign step-info" data-container="body" data-toggle="popover" data-placement="right" data-html="';
-          otherInfo += (yesList.length > 0) ? '<b>Yes:</b> ' + yesList + '<br>' : '';
-          otherInfo += (ongoingList.length > 0) ? '<b>Ongoing:</b> ' + ongoingList + '<br>': '';
-          otherInfo += (noList.length > 0) ? '<b>No:</b> ' + noList : '';
+          otherInfo += (yesList.length > 0) ? '<span class=' + "'green-text'" + '><b>Yes:</b></span> ' + yesList + '<br>' : '';
+          otherInfo += (ongoingList.length > 0) ? '<span class=' + "'amber-text'" + '><b>Ongoing:</b></span> ' + ongoingList + '<br>': '';
+          otherInfo += (noList.length > 0) ? '<span class=' + "'red-text'" + '><b>No:</b></span> ' + noList : '';
           otherInfo += '"></span>' + '<br>' +
               'start date: ' + d[stage + ' / start date'] + '<br>' +
               'expected end date: ' + d[stage + ' / expected end date'] + '<br>' +
