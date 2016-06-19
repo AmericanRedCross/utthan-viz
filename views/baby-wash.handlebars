@@ -12,7 +12,7 @@
 
 }
 .map{
-  height: 300px;
+  height: 450px;
   width: 100%;
 }
 .glyphicon.step-info {
@@ -213,24 +213,76 @@ function vizData(){
 
       pageElement.select('.total-progress').html('<p><small>approximately ' + formatPercent((yesGrand + (0.5 * ongoingGrand)) / totalGrand) + '</small></p>')
 
-      if (isNaN(parseFloat(d.latitude)) === false && isNaN(parseFloat(d.longitude)) === false){
-        pageElement.select('.project-map').html('<div class="map"' + ' id="map' + counter + '"' + '></div>');
-        // create basic leaflet map
-        // ========================
-        // tile layer for base map
-        var hotUrl = 'http://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png',
-          hotAttribution = '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, Tiles from <a href="http://hot.openstreetmap.org/" target="_blank">H.O.T.</a>',
-          hotLayer = L.tileLayer(hotUrl, {attribution: hotAttribution});
-        // initialize map w options
-        var thisMapContainer = 'map' + counter;
-        counter++;
-        var thisMap = L.map(thisMapContainer, {
-            layers: [hotLayer],
-            center: new L.LatLng(d.latitude, d.longitude),
-            zoom: 13,
-            minZoom: 8
-          });
-        var prjMarker = L.marker([d.latitude, d.longitude]).addTo(thisMap);
+      var waterIcon = L.icon({
+          iconUrl: 'media/water-icon.png',
+          iconSize:     [20, 25],
+          iconAnchor:   [10, 12],
+          popupAnchor:  [0, -15]
+      });
+      function onEachFeature(feature, layer) {
+        var popupContent = '';
+        $.each(feature.properties, function(i,a){
+          popupContent += '<strong>' + i + ': </strong>' + '&nbsp;' + a + '<br>';
+        });
+        layer.bindPopup(popupContent);
+      }
+
+      // function to draw stuff on the map if we have detailed geo data
+      function drawGeo(lines, points, thisMap){
+        var linesLocation = "geo/" + lines;
+        d3.json(linesLocation, function(error,json){
+          if (error) return console.warn(error);
+          var linesLayer = L.geoJson(json, {
+            style: {
+              "color": "#0f6493",
+              "weight": 3,
+              "opacity": 1
+            }
+          }).addTo(thisMap);
+          var mapBounds = linesLayer.getBounds();
+          thisMap.fitBounds(mapBounds);
+        });
+        var pointsLocation = "geo/" + points;
+        d3.json(pointsLocation, function(error,json){
+          if (error) return console.warn(error);
+          var ptsLayer = L.geoJson(json,{
+            pointToLayer: function (feature, latlng) {
+              return L.marker(latlng, {icon: waterIcon});
+            },
+            onEachFeature: onEachFeature
+          }).addTo(thisMap);
+        });
+
+      }
+
+      // create map container
+      pageElement.select('.project-map').html('<div class="map"' + ' id="map' + counter + '"' + '></div>');
+      // create basic leaflet map
+      // ========================
+      // tile layer for base map
+      var hotUrl = 'http://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png',
+        hotAttribution = '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, Tiles from <a href="http://hot.openstreetmap.org/" target="_blank">H.O.T.</a>',
+        hotLayer = L.tileLayer(hotUrl, {attribution: hotAttribution});
+      // initialize map w options
+      var aMapContainer = 'map' + counter;
+      counter++;
+      var aMap = L.map(aMapContainer, {
+          layers: [hotLayer],
+          // center: new L.LatLng([0, 0]),
+          // zoom: 13,
+          minZoom: 8
+        });
+
+      // check to see if we have detailed map data
+      if (d.location === "Lagu"){
+        drawGeo("lagu_lines.geojson", "lagu_points.geojson", aMap);
+      } else if (d.location === "Simle"){
+        drawGeo("simle_lines.geojson", "simle_points.geojson", aMap);
+      } else if (isNaN(parseFloat(d.latitude)) === false && isNaN(parseFloat(d.longitude)) === false){
+        var prjMarker = L.marker([d.latitude, d.longitude]).addTo(aMap);
+        aMap.setView([d.latitude, d.longitude], 13);
+      } else {
+        pageElement.select('.project-map').html('');
       }
 
       var commContrib = (isNaN(parseFloat(d['amt of community contribution']))) ? '?' : commas(d['amt of community contribution']) ;
