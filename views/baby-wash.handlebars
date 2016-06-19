@@ -45,6 +45,14 @@
   background-color: #fbb4ae;
 
 }
+.project-pics:empty {
+  display: none;
+}
+.project-pics img {
+  display: inline-block;
+  height: 300px;
+  padding: 20px 20px 0 0;
+}
 
 
 
@@ -151,6 +159,8 @@ function vizData(){
         '<div class="col-md-6">' +
           '<div class="project-map"></div>' +
           '<div class="project-stats"></div>' +
+        '</div>' + // col-md-6
+        '<div class="col-md-12 project-pics">' +
         '</div>' + // col-md-6
     '</div>' + // row
     '<hr>'; })
@@ -283,6 +293,11 @@ function vizData(){
         aMap.setView([d.latitude, d.longitude], 13);
       } else {
         pageElement.select('.project-map').html('');
+      }
+
+      // project-pics
+      if (d.location === "Lagu"){
+        pageElement.select('.project-pics').html('<img src="media/pics/lagu_01.jpg"><img src="media/pics/lagu_02.jpg"><img src="media/pics/lagu_03.jpg">');
       }
 
       var commContrib = (isNaN(parseFloat(d['amt of community contribution']))) ? '?' : commas(d['amt of community contribution']) ;
