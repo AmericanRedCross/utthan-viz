@@ -1,121 +1,81 @@
-<!DOCTYPE html>
-<html>
-	<head>
-		<title>{{opts.siteName}}</title>
+<!doctype html>
+<html class="no-js" lang="en" dir="ltr">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="shortcut icon" href="{{opts.nginxlocation}}img/favicon.ico" type="image/x-icon">
+	<link rel="icon" href="{{opts.nginxlocation}}img/favicon.ico" type="image/x-icon">
 
-		<meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{opts.siteName}}</title>
 
-		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
-		<script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
-		<script src="js/metisMenu.min.js"></script>
-		<script src="js/d3.min.js" ></script>
-		<!-- <script src="http://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.3/leaflet.js"></script> -->
-		<!-- <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.3/leaflet.css" /> -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+  <script src="{{opts.nginxlocation}}js/what-input.js" ></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/metisMenu/2.6.2/metisMenu.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/foundation/6.3.0/js/foundation.min.js"></script>
+  <script src="https://d3js.org/d3.v4.min.js"></script>
+  <script src="http://d3js.org/queue.v1.min.js"></script>
 
-		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
-		<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
-		<link rel="stylesheet" href="css/ocha-style.css">
-		<link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/metisMenu/2.6.2/metisMenu.min.css">
+  <!-- <link rel="stylesheet" href="{{opts.nginxlocation}}css/ocha-style.css"> -->
+  <link rel="stylesheet" href="{{opts.nginxlocation}}css/gulp.css">
 
-
-		<link rel="shortcut icon" href="media/favicon.ico" type="image/x-icon">
-		<link rel="icon" href="media/favicon.ico" type="image/x-icon">
-	</head>
-	<body>
+</head>
+<body>
 
 		{{#if user}}
+
+
 		<!-- Navigation -->
-		<a id="menu-toggle" href="#" class="btn btn-dark btn-lg toggle"><i class="fa fa-bars"></i></a>
-		<nav id="sidebar-wrapper">
-				<ul id="side-menu" class="sidebar-nav metismenu">
-						<a id="menu-close" href="#" class="btn btn-light btn-lg pull-right toggle"><i class="fa fa-times"></i></a>
-						<li class="sidebar-brand">
-								<a href="{{location}}" >Home</a>
-						</li>
-						<!-- <li>
-                <a href="mason-training" onclick = $("#menu-close").click(); ><i class="fa fa-fw fa-briefcase"></i> &nbsp; Mason training</a>
-            </li> -->
-						<li>
-								<a href="baby-wash" onclick = $("#menu-close").click(); ><i class="fa fa-fw fa-tint"></i> &nbsp; Baby WASH</a>
-						</li>
-						<!--
-						<li>
-								<a href="#">Summary <i class="fa nav-arrow nav-float-right"></i></a>
-								<ul class="second-level">
-										<li>
-												<a href="#" class="temp-disable">Overall progress</a>
-										</li>
-										<li>
-												<a href="#" class="temp-disable">Hardware indicators</a>
-										</li>
-										<li>
-												<a href="#" class="temp-disable">Software indicators</a>
-										</li>
-								</ul>
-						</li>
-						<li>
-								<a href="#" class="temp-disable"><i class="fa fa-fw fa-picture-o"></i> &nbsp; Gallery</a>
-						</li>
-						<li>
-								<a href="#">Interventions<i class="fa nav-arrow nav-float-right"></i></a>
-								<ul class="second-level">
-										<li>
-												<a href="/ccg"><i class="fa fa-fw fa-money"></i> &nbsp; Conditional cash grants</a>
-										</li>
-										<li>
-												<a href="/sted"><i class="fa fa-fw fa-briefcase"></i> &nbsp; STED</a>
-										</li>
-										<li>
-												<a href="/core-shelter"><i class="fa fa-fw fa-home"></i> &nbsp; Core shelter</a>
-										</li>
-								</ul>
-						</li>
-						<li>
-								<a href="#">Community mobilization <i class="fa nav-arrow nav-float-right"></i></a>
-								<ul class="second-level">
-										<li>
-												<a href="/spot-maps"><i class="fa fa-fw fa-map-o"></i> &nbsp; SPOT maps and CAPs</a>
-										</li>
-								</ul>
-						</li>
--->
-						<li style="border-top:1px solid #6d6e70;">
-							<form id="form-logout" style="display:none;" class="navbar-form" role="form" action="user/logout" method="POST"></form>
-							<a href="#top"  onclick = document.getElementById('form-logout').submit(); >{{user.username}}
-								<span class="logout nav-float-right">Logout &nbsp;<i class="fa fa-sign-out"></i></span>
-							</a>
-						</li>
-						{{#eq user.permissions "super"}}
-							<li>
-								<a href="users"><i class="fa fa-user"></i> &nbsp; Manage users</a>
-							</li>
-						{{/eq}}
+<button id="menu-toggle" type="button" class="button secondary toggle"><i class="fa fa-bars"></i></button>
+<nav id="sidebar-wrapper">
+		<ul id="side-menu" class="sidebar-nav metismenu">
+				<button id="menu-close" type="button" class="button secondary toggle pull-right"><i class="fa fa-times"></i></button>
+				<li class="sidebar-brand">
+						<a href="{{opts.nginxlocation}}" >Home</a>
+				</li>
 
-				</ul>
-		</nav>
-		{{/if}}
-
-			<div id="site-content" class="container">
-				{{{body}}}
-			</div>
+        <li>
+					<a href="{{opts.nginxlocation}}baby-wash" onclick = $("#menu-close").click(); ><i class="fa fa-fw fa-tint"></i> &nbsp; Baby WASH</a>
+				</li>
 
 
-<script>
-// # closes the sidebar menu
-$("#menu-close").click(function(e) {
-		e.preventDefault();
-		$("#sidebar-wrapper").toggleClass("active");
-});
-// # opens the sidebar menu
-$("#menu-toggle").click(function(e) {
-		e.preventDefault();
-		$("#sidebar-wrapper").toggleClass("active");
-});
-// # creates the dropdowns in the sidebar menu
-$(function() {
-    $('#side-menu').metisMenu();
-});
-</script>
+				<li style="border-top:1px solid #6d6e70;">
+					<form id="form-logout" style="display:none;" action="{{opts.nginxlocation}}logout" method="POST"></form>
+					<a href="#" onclick = document.getElementById('form-logout').submit(); >{{user.user}}
+						<span class="logout nav-float-right">Logout &nbsp;<i class="fa fa-sign-out"></i></span>
+					</a>
+				</li>
+				{{#eq user.permissions "admin"}}
+					<li>
+						<a href="{{opts.nginxlocation}}admin/users"><i class="fa fa-fw fa-user"></i> &nbsp; Manage users</a>
+					</li>
+				{{/eq}}
+		</ul>
+</nav>
+{{/if}}
+
+  	{{{body}}}
+
+	<script>
+	  $(document).foundation();
+
+	  // # closes the sidebar menu
+	  $("#menu-close").click(function(e) {
+	  		e.preventDefault();
+	  		$("#sidebar-wrapper").toggleClass("active");
+	  });
+	  // # opens the sidebar menu
+	  $("#menu-toggle").click(function(e) {
+	  		e.preventDefault();
+	  		$("#sidebar-wrapper").toggleClass("active");
+	  });
+	  // # creates the dropdowns in the sidebar menu
+	  $(function() {
+	      $('#side-menu').metisMenu();
+	  });
+
+	</script>
 
 </body>
 </html>

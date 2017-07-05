@@ -1,21 +1,23 @@
-<header class="row header">
-			<h1><div class="logos">
-				<img src="media/logos/01-nrcs.png">
-				<img src="media/logos/02-arc.png">
-				</div>
-			</h1>
-			<h1>
-			Utthan<br>
-			<small>Earthquake Recovery Program</small></h1>
+<div class="expanded row jumbotron">
+	<div class="row">
+    <div class="medium-offset-1 medium-10 columns">
+			<div class="jumbotron-logos">
+				<img src="img/logos/01-nrcs.png">
+				<img src="img/logos/02-arc.png">
+			</div>
+			<h2>Utthan<br>
+			<h3 class="subheader">Earthquake Recovery Program</h3>
+    </div>
+	</div>
+</div>
 
-</header>
+<br>
 
-<hr>
 
 
 {{#if user}}
 <div class="row">
-	<div class="col-xs-12">
+	<div class="columns small-12">
 		<p>In April 2015, a magnitude 7.8 earthquake struck Nepal, affecting an estimated 8 million people—more than a quarter of Nepal’s population—across 31 districts in the West and Central Regions. To aid the long-term recovery of the most-affected communities, the Nepal Red Cross is working with the American Red Cross, Spanish Red Cross and Canadian Red Cross on a three-year post-earthquake integrated recovery program in Nuwakot, Rasuwa and Makwanpur districts.</p>
 		<p>Working through local Village Development Committees, the Utthan Earthquake Recovery Program will focus on long-term recovery and community resilience building that will contribute to the sustainable recovery of vulnerable households. The project plans to provide earthquake-affected households with an integrated package of services and support to rebuild shelter, water, sanitation and hygiene (WASH), and livelihoods. Additionally, the program will support wider community-level health and WASH activities, including improving community water schemes, providing WASH services in selected schools and health posts, and organizing community health promotion and selected community-level livelihoods activities.</p>
 	</div>
@@ -25,53 +27,41 @@
 <div class="section-spacer"></div>
 
 <div class="row">
-	<div class="col-xs-12" >
+	<div class="small-12 columns" >
 			<h2 class="under-thick">Program Objectives</h2>
 	</div>
-	<div class="col-xs-12">
+	<div class="small-12 columns">
 		<p>The overall goal of the program is to contribute to the sustainable recovery of vulnerable earthquake-affected households and develop safer, more resilient communities.<p>
 	</div>
-	<div class="col-sm-4">
+	<div class="small-4 columns">
 		<p>1.	Vulnerable earthquake-affected households and communities increase the ability to self-organize and take actions to recover quicker and build back safer by adopting improved resilience practices to disasters.</p>
 	</div>
-	<div class="col-sm-4">
+	<div class="small-4 columns">
 		<p>2.	Vulnerable earthquake-affected households and communities increase access to safe and sustainable infrastructure and basic services to better meet household needs.</p>
 	</div>
-	<div class="col-sm-4">
+	<div class="small-4 columns">
 		<p>3.	NRCS increases organizational and technical capacity to manage and implement community-based recovery, resilience and readiness to respond programming.</p>
 	</div>
 </div>
 
 <div class="section-spacer"></div>
 
-</div> <!-- /container -->
 
-<hr>
-<footer id="site-footer">
-	<div class="row row-logo">
-				{{{logos}}}
-			</div>
-</footer>
+<br>
+
+{{> page/footer}}
 
 {{else}}
 <div class="row">
-{{#if error}}
-		<div class="alert alert-danger alert-dismissable">
-			  <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-			  <p><strong>Sorry, we've hit a snag logging you in.</strong> <em>{{error}}</em></p>
-		</div>
-	{{/if}}
-	<form class="row" role="form" action="user/login" method="POST">
-		<div class="col-md-6">
-			<div class="form-group">
-				<input type="text" placeholder="Username" name="username" class="form-control">
-			</div>
-			<div class="form-group">
-				<input type="password" placeholder="Password" name="password" class="form-control">
-			</div>
-			<button type="submit" class="btn btn-dark">Log In</button>
-		</div>
-	</form>
+	<div class="row">
+	  <div class="small-8 medium-offset-2 medium-4 columns">
+	    	<form action="{{opts.nginxlocation}}login" method="POST">
+	        <input type="text" name="user" id="login-user" placeholder="Username" >
+	        <input type="password" name="password" id="login-password" placeholder="Password" >
+	        <button type="submit" value="submit" class="button secondary">Log In</button>
+	    	</form>
+	  </div>
+	</div>
 {{/if}}
 
 

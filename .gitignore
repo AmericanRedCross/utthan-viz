@@ -4,6 +4,19 @@ node_modules
 config.js
 notes/*
 
+settings.js
+node_modules
+notes/*
+backups/*
+!backups/note.txt
+tmp/*
+!tmp/note.txt
+site.db
+sessions.db
+public/fonts/*
+!public/fonts/README.md
+public/css/gulp.css
+
 # Compiled source #
 ###################
 *.com

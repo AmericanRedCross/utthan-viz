@@ -9,17 +9,16 @@
 }
 .stage-graph {
   float:left;
-
 }
 .map{
   height: 450px;
   width: 100%;
 }
-.glyphicon.step-info {
+.add-stage-info {
   cursor: pointer;
   color: #6d6e70;
 }
-.glyphicon.step-info:hover {
+.add-stage-info:hover {
   color: #ed1b2e;
 }
 .green-text {
@@ -60,24 +59,19 @@
 <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.css" />
 
 
-<header class="row header">
-	<div class="col-md-12">
+<div class="row">
+	<div class="columns ">
 		<h1>Baby WASH </h1>
 	</div>
-</header>
-<hr>
-
+</div>
+<br>
 
 <div id="content">
 </div>
 
-<hr>
-<footer id="site-footer">
-	<div class="row row-logo">
-				{{{logos}}}
-			</div>
-</footer>
+<br>
 
+{{> page/footer}}
 
 <script src="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.js"></script>
 <script>
@@ -86,13 +80,13 @@ var data;
 var stages = ["intake structure", "pipeline", "rvt (stone m)", "rvt (ferrocement)", "bpt-ic-dc", "tap stand posts", "toilet construction", "handwash post", "waste receptacle"]
 var checklist = ["intake structure / collection local materials", "intake structure / foundation prep", "intake structure / stone solling", "intake structure / pcc", "intake structure / stone masonry work", "intake structure / plastering", "intake structure / punning", "intake structure / install fittings", "intake structure / barbed wire fencing", "pipeline / digging", "pipeline / replacement & joining", "pipeline / refilling", "rvt (stone m) / collection local materials", "rvt (stone m) / clear site", "rvt (stone m) / foundation prep", "rvt (stone m) / stone solling", "rvt (stone m) / pcc", "rvt (stone m) / stone masonry work", "rvt (stone m) / plastering", "rvt (stone m) / punning", "rvt (stone m) / cover slab casting", "rvt (stone m) / install fittings", "rvt (stone m) / barbed wire fencing", "rvt (ferrocement) / site clearance", "rvt (ferrocement) / foundation prep", "rvt (ferrocement) / plumbing", "rvt (ferrocement) / stone solling", "rvt (ferrocement) / pcc", "rvt (ferrocement) / formwork ferrocement", "rvt (ferrocement) / laying of chicken wire", "rvt (ferrocement) / laying of plain wire", "rvt (ferrocement) / outside plaster", "rvt (ferrocement) / curing", "rvt (ferrocement) / remove formwork", "rvt (ferrocement) / inside plaster", "rvt (ferrocement) / punning", "rvt (ferrocement) / barbed wire fencing", "rvt (ferrocement) / installation of fittings", "bpt-ic-dc / site clearance", "bpt-ic-dc / foundation prep", "bpt-ic-dc / stone solling", "bpt-ic-dc / pcc", "bpt-ic-dc / stone masonary work", "bpt-ic-dc / plastering", "bpt-ic-dc / punning", "bpt-ic-dc / slab casting", "bpt-ic-dc / install fittings", "tap stand posts / clear site", "tap stand posts / foundation prep", "tap stand posts / stone solling", "tap stand posts / pcc", "tap stand posts / stone masonry work", "tap stand posts / plastering", "tap stand posts / instal fittings", "toilet construction / site clearance", "toilet construction / septic tank foundation prep", "toilet construction / soiling in septic tank", "toilet construction / dry stone masonary for septic tank", "toilet construction / slab casting over septic tank", "toilet construction / toilet house foundation prep", "toilet construction / solling for toilet house", "toilet construction / stone masonry work, mud & mortar", "toilet construction / door and ventilation fixing", "toilet construction / plastering", "toilet construction / roofing", "toilet construction / fixing of panset", "handwash post / construction", "waste receptacle / construction"]
 
-var formatPercent = d3.format("%");
+var formatPercent = d3.format(".0%");
 var commas = d3.format(",");
 
 function getData(){
   $.ajax({
     type: 'GET',
-    url: 'data/baby-wash',
+    url: '{{opts.nginxlocation}}data/baby-wash',
     dataType: 'JSON'
   }).done(function(response){
     data = response;
@@ -140,14 +134,16 @@ function crunchData(){
 var width = 30,
     height = 30,
     radius = Math.min(width, height) / 2,
-    arc = d3.svg.arc().outerRadius(radius),
-    pie = d3.layout.pie().value(function(d){ return d.count })
+    arc = d3.arc().outerRadius(radius).innerRadius(0),
+    pie = d3.pie().value(function(d){ return d.count })
 
 function vizData(){
 
-  var sections = d3.select('#content').selectAll('div').data(data).enter().append('div').classed({'row': true, 'project-row': true})
+  var sections = d3.select('#content').selectAll('div').data(data).enter()
+  .append('div')
+    .classed('row project-row', true)
     .attr('data-sort', function(d){ return d['sort-string']; })
-    .html(function(d) { return '<div class="row"><div class="col-md-6">' +
+    .html(function(d) { return '<div class="row"><div class="columns medium-4">' +
         '<div class="project-info">' +
             '<div class="project-title">' +
             d.location + '<br><small>(' + d.district + ', ' + d.vdc +
@@ -156,17 +152,17 @@ function vizData(){
             '<div class="stage-progress"></div>' +
           '</div>' + // .project-info
         '</div>' + // col-md-6
-        '<div class="col-md-6">' +
+        '<div class="columns medium-8">' +
           '<div class="project-map"></div>' +
           '<div class="project-stats"></div>' +
         '</div>' + // col-md-6
-        '<div class="col-md-12 project-pics">' +
+        '<div class="columns small-12 project-pics">' +
         '</div>' + // col-md-6
     '</div>' + // row
     '<hr>'; })
 
     var counter = 0;
-    sections.each(function(d){
+    sections.each(function(d, i){
       var yesGrand = 0;
       var ongoingGrand = 0;
       var totalGrand = 0;
@@ -194,15 +190,18 @@ function vizData(){
             .attr('width', width).attr('height', height)
             .append('g').attr('transform', 'translate(' + (width / 2) + ',' + (height / 2) + ')')
           svg.selectAll('g').data(pie(pieData)).enter().append('path')
+            .attr('class', "arc")
             .attr('d', arc)
             .style("fill", function(d) { return d.data.color; })
 
           var otherInfo = '<b>' + stage + '</b> <small> [' + formatPercent((yesCount + (0.5 * ongoingCount)) / total) + ']</small>&nbsp; ' +
-              '<span class="glyphicon glyphicon-info-sign step-info" data-container="body" data-toggle="popover" data-placement="right" data-html="';
+              '<i class="fa fa-info-circle fa-fw add-stage-info" data-toggle="' + i + '_' + indexS + '"></i>' +
+              '<div class="dropdown-pane" id="' + i + '_' + indexS + '" data-dropdown data-hover="true" data-hover-pane="true">';
           otherInfo += (yesList.length > 0) ? '<span class=' + "'green-text'" + '><b>Yes:</b></span> ' + yesList + '<br>' : '';
           otherInfo += (ongoingList.length > 0) ? '<span class=' + "'amber-text'" + '><b>Ongoing:</b></span> ' + ongoingList + '<br>': '';
           otherInfo += (noList.length > 0) ? '<span class=' + "'red-text'" + '><b>No:</b></span> ' + noList : '';
-          otherInfo += '"></span>' + '<br>' +
+          otherInfo += '</div>' +
+          '<br>' +
               'start date: ' + d[stage + ' / start date'] + '<br>' +
               'expected end date: ' + d[stage + ' / expected end date'] + '<br>' +
               'actual end date: ' + d[stage + ' / end date'] + '<br>';
@@ -211,20 +210,12 @@ function vizData(){
         }
       });
 
-      $(function () {
-        $('[data-toggle="popover"]').popover({
-          html: true,
-          trigger: 'click',
-          content: function() {
-            return $(this).data('html');
-          }
-        })
-      })
+      $(document).foundation();
 
       pageElement.select('.total-progress').html('<p><small>approximately ' + formatPercent((yesGrand + (0.5 * ongoingGrand)) / totalGrand) + '</small></p>')
 
       var waterIcon = L.icon({
-          iconUrl: 'media/water-icon.png',
+          iconUrl: '{{opts.nginxlocation}}img/water-icon.png',
           iconSize:     [20, 25],
           iconAnchor:   [10, 12],
           popupAnchor:  [0, -15]
@@ -297,7 +288,7 @@ function vizData(){
 
       // project-pics
       if (d.location === "Lagu"){
-        pageElement.select('.project-pics').html('<img src="media/pics/lagu_01.jpg"><img src="media/pics/lagu_02.jpg"><img src="media/pics/lagu_03.jpg">');
+        pageElement.select('.project-pics').html('<img src="{{opts.nginxlocation}}img/pics/lagu_01.jpg"><img src="{{opts.nginxlocation}}img/pics/lagu_02.jpg"><img src="{{opts.nginxlocation}}img/pics/lagu_03.jpg">');
       }
 
       var commContrib = (isNaN(parseFloat(d['amt of community contribution']))) ? '?' : commas(d['amt of community contribution']) ;
