@@ -301,7 +301,7 @@ app.get('/mason-training',function(req,res) {
 
 var flow = require('flow')
 
-app.post('/data/baby-wash', function (req,res){
+app.get('/data/baby-wash', function (req,res){
 	if (req.user){
 		var files = ["DWSS_and_WSS_Makawanpur.csv", "DWSS_and_WSS_Nuwakot.csv", "DWSS_and_WSS_Rasuwa.csv"]
 		var allData = [];

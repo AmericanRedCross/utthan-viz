@@ -85,7 +85,7 @@ var commas = d3.format(",");
 
 function getData(){
   $.ajax({
-    type: 'POST',
+    type: 'GET',
     url: '{{opts.nginxlocation}}data/baby-wash',
     dataType: 'JSON'
   }).done(function(response){
