@@ -301,7 +301,7 @@ app.get('/mason-training',function(req,res) {
 
 var flow = require('flow')
 
-app.get('/data/baby-wash', function (req,res){
+app.post('/data/baby-wash', function (req,res){
 	if (req.user){
 		var files = ["DWSS_and_WSS_Makawanpur.csv", "DWSS_and_WSS_Nuwakot.csv", "DWSS_and_WSS_Rasuwa.csv"]
 		var allData = [];
@@ -321,7 +321,7 @@ app.get('/data/baby-wash', function (req,res){
 				}
 			},
 			function(){
-				res.send(allData);
+				res.json(allData);
 			}
 		);
 	}

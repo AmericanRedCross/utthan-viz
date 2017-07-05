@@ -18,7 +18,7 @@
     "express3-handlebars": "^0.5.2",
     "flow": "^0.2.3",
     "font-awesome": "^4.7.0",
-    "foundation-sites": "^6.3.0",
+    "foundation-sites": "6.3.1",
     "gulp": "^3.9.1",
     "gulp-autoprefixer": "^4.0.0",
     "gulp-sass": "^3.1.0",
